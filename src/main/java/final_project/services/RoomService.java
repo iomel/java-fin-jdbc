@@ -32,7 +32,14 @@ public class RoomService {
         if (room == null)
             throw new BadRequestException("RoomService.validate error - room is NULL!");
 
-        if (room.toString().contains("null") || room.toString().contains(",,"))
+        if (room.getHotel() == null)
+            throw new BadRequestException("RoomService.validate error - room's hotel is NULL!");
+
+        if (room.getDateAvailableFrom() == null
+                || room.getHotel().getHotelName() == null
+                || room.getHotel().getCity() == null
+                || room.getHotel().getCountry() == null
+                || room.getHotel().getStreet() == null)
             throw new BadRequestException("RoomService.validate error - room has empty parameter! Room ID: " + room.getId());
     }
 

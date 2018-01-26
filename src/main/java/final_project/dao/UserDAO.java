@@ -12,6 +12,9 @@ import java.util.TreeSet;
 public class UserDAO extends GeneralDAO {
 
     public User addUser(User user) throws SQLException {
+
+        validateUser(user);
+
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?)")) {
 
@@ -39,7 +42,7 @@ public class UserDAO extends GeneralDAO {
         }
     }
 
-    public TreeSet<User> getAll() throws Exception {
+    public TreeSet<User> getAll() throws SQLException {
         TreeSet<User> users = new TreeSet<>();
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS")) {
@@ -88,4 +91,11 @@ public class UserDAO extends GeneralDAO {
         return user;
     }
 
+    private void validateUser(User user) throws SQLException {
+        if (getUserByID(user.getId()) != null)
+            throw new SQLException("User with such ID is registered already! ID: " + user.getId());
+        for(User dbUser : getAll())
+            if(dbUser.getUserName().equals(user.getUserName()))
+                throw new SQLException("User name is registered already! ID: " + user.getId() + " Name: " + user.getUserName());
+    }
 }

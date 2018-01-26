@@ -27,5 +27,6 @@ public class DemoOrder {
         controller.bookRoom(room1.getId(), user.getId(), 111);
 //        controller.cancelReservation(room1.getId(), user1.getId(), hotel1.getId());
         Session.resetSession();
+
     }
 }

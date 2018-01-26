@@ -1,6 +1,5 @@
 package final_project.dao;
 
-import final_project.models.Hotel;
 import final_project.models.Room;
 
 import java.sql.Connection;
@@ -14,6 +13,9 @@ public class RoomDAO extends GeneralDAO {
     private HotelDAO hotels = new HotelDAO();
 
     public Room addRoom(Room room) throws Exception {
+        if (getRoomByID(room.getId()) != null)
+            throw new SQLException("Room with such ID is registered already! ID: " + room.getId());
+
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ROOMS VALUES (?, ?, ?, ?, ?, ?, ?)")){
             if (hotels.getHotelById(room.getHotel().getId()) == null)

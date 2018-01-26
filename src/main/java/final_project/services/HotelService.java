@@ -16,7 +16,6 @@ public class HotelService {
         if (name == null)
             throw new BadRequestException("findHotelByName error - hotel name is NULL!");
 
-        //this should be in DAO
         for (Hotel hotel : hotelDAO.getAll())
             if(hotel.getHotelName().equals(name))
                 hotels.add(hotel);
@@ -36,7 +35,6 @@ public class HotelService {
     }
     public Hotel addHotel(Hotel hotel) throws Exception {
         validate(hotel);
-        //do you generate unique id ?
         return hotelDAO.addHotel(hotel);
     }
 
@@ -55,7 +53,10 @@ public class HotelService {
         if (hotel == null)
             throw new BadRequestException("HotelService.nullCheck error - hotel is NULL!");
 
-        if (hotel.toString().contains("null") || hotel.toString().contains(",,"))
+        if (hotel.getHotelName() == null
+                || hotel.getCountry() == null
+                || hotel.getCity() == null
+                || hotel.getStreet() == null)
             throw new BadRequestException("HotelService.nullCheck error - hotel has empty parameter! Hotel ID: " + hotel.getId());
     }
 

@@ -38,7 +38,7 @@ public class UserService {
         if (user == null)
             throw new BadRequestException("UserService.nullCheck error - user is NULL!");
 
-        if (user.toString().contains("null") || user.toString().contains(",,"))
+        if (user.getUserName() == null || user.getUserType() == null || user.getPassword() == null || user.getCountry() == null)
             throw new BadRequestException("UserService.nullCheck error - user has empty parameter! User ID: " + user.getId());
     }
 

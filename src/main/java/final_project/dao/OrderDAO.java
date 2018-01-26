@@ -1,7 +1,6 @@
 package final_project.dao;
 
 import final_project.models.Order;
-import final_project.models.Room;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +16,9 @@ public class OrderDAO extends GeneralDAO {
     private UserDAO users = new UserDAO();
 
     public Order addOrder(Order order) throws SQLException {
+        if (getOrderById(order.getId()) != null)
+            throw new SQLException("Order with such ID is registered already! ID: " + order.getId());
+
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ORDERS VALUES (?, ?, ?, ?, ?, ?)")){
             if (hotels.getHotelById(order.getRoom().getHotel().getId()) == null
@@ -51,8 +53,8 @@ public class OrderDAO extends GeneralDAO {
     public TreeSet<Order> getAll() throws Exception {
         TreeSet<Order> orders = new TreeSet<>();
         try(Connection connection = getConnection();
-            PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ORDERS") ) {
-            ResultSet result = roomStatement.executeQuery();
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS") ) {
+            ResultSet result = statement.executeQuery();
             if(result.isBeforeFirst())
                 while (result.next()) {
                     long orderId = result.getLong(1);
@@ -71,4 +73,25 @@ public class OrderDAO extends GeneralDAO {
         return orders;
     }
 
+    public Order getOrderById (long id) throws SQLException{
+        Order order = null;
+        try(Connection connection = getConnection();
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS WHERE ID = ? ") ) {
+            statement.setLong(1, id);
+            ResultSet result = statement.executeQuery();
+            if(result.isBeforeFirst())
+                while (result.next()) {
+                    long orderId = result.getLong(1);
+                    long userId = result.getLong(2);
+                    long roomId = result.getLong(3);
+                    Date dateFrom = new Date(result.getDate(4).getTime());
+                    Date dateTo = new Date(result.getDate(5).getTime());
+                    double moneyPaid = result.getDouble(6);
+                    Order newOrder = new Order(users.getUserByID(userId), rooms.getRoomByID(roomId), dateFrom, dateTo, moneyPaid);
+                }
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + "Issues with selecting all rooms");
+        }
+        return order;
+    }
 }
