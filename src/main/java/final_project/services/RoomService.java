@@ -3,7 +3,7 @@ package final_project.services;
 import final_project.dao.RoomDAO;
 import final_project.models.Room;
 import final_project.utils.Filter;
-import lesson22.userrepo.exception.BadRequestException;
+import final_project.utils.exceptions.BadRequestException;
 
 import java.util.ArrayList;
 

@@ -49,6 +49,8 @@ public class Order implements BaseEntity, Comparable<Order> {
                 "," + room.toString().replaceAll(",", ":").replace("\n","") +
                 "," + simpleDateFormat.format(dateFrom) + "," + simpleDateFormat.format(dateTo) +
                 "," + moneyPaid + "\n";
+//        Date dateTo = dateFormat.parse(params[4]);
+
     }
 
     public User getUser() {
@@ -69,21 +71,6 @@ public class Order implements BaseEntity, Comparable<Order> {
 
     public double getMoneyPaid() {
         return moneyPaid;
-    }
-
-    public static Order stringToObject(String orderString) throws ParseException {
-        String[] params = orderString.split(",");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d-MMM-yyyy");
-
-        long id = Long.parseLong(params[0]);
-        User user = User.stringToObject(params[1].replaceAll(":", ","));
-        Room room = Room.stringToObject(params[2].replaceAll(":", ","));
-        Date dateFrom = dateFormat.parse(params[3]);
-        Date dateTo = dateFormat.parse(params[4]);
-        double moneyPaid = Double.parseDouble(params[5]);
-        Order order = new Order(user, room, dateFrom, dateTo, moneyPaid);
-        order.setId(id);
-        return order;
     }
 
 }

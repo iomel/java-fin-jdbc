@@ -4,7 +4,7 @@ import final_project.dao.UserDAO;
 import final_project.models.User;
 import final_project.utils.Countries;
 import final_project.utils.Session;
-import lesson22.userrepo.exception.BadRequestException;
+import final_project.utils.exceptions.BadRequestException;
 
 import java.util.Arrays;
 

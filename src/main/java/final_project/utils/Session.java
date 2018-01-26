@@ -3,7 +3,6 @@ package final_project.utils;
 import final_project.models.User;
 
 public class Session {
-        //why do you use session inside session? should be refactored
     private static User loggedUser;
 
     public static void resetSession(){

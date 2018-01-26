@@ -1,37 +1,97 @@
 package final_project.dao;
 
+import final_project.models.Hotel;
 import final_project.models.Room;
-import final_project.utils.FilesIO;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.TreeSet;
 
-public class RoomDAO extends GeneralDAO<Room> {
-
-    private static final String PATH_DB = "D://Test//RoomDB.txt";
+public class RoomDAO extends GeneralDAO {
+    private HotelDAO hotels = new HotelDAO();
 
     public Room addRoom(Room room) throws Exception {
-        return add(PATH_DB, room);
+        try(Connection connection = getConnection();
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO ROOMS VALUES (?, ?, ?, ?, ?, ?, ?)")){
+            if (hotels.getHotelById(room.getHotel().getId()) == null)
+                throw new SQLException("There is no such hotel (ID:" + room.getHotel().getId() + ")");
+            statement.setLong(1, room.getId());
+            statement.setInt(2, room.getNumberOfGuests());
+            statement.setDouble(3, room.getPrice());
+            statement.setString(4, String.valueOf(room.isBreakfastIncluded()).toUpperCase());
+            statement.setString(5, String.valueOf(room.isPetsAllowed()).toUpperCase());
+            statement.setDate(6, new java.sql.Date(room.getDateAvailableFrom().getTime()));
+            statement.setLong(7, room.getHotel().getId());
+
+            int result = statement.executeUpdate();
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + " Issue to save room ID: " + room.getId());
+        }
+
+        return room;
     }
 
     public void deleteRoom(long id) throws Exception {
-        delete(PATH_DB, id);
+        try(Connection connection = getConnection();
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM ROOMS WHERE ID = ?")) {
+            statement.setLong(1, id);
+            int result = statement.executeUpdate();
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + " Issue with deleting room ID: " + id);
+        }
     }
 
     public TreeSet<Room> getAll() throws Exception {
         TreeSet<Room> rooms = new TreeSet<>();
-        String[] loadedRooms = FilesIO.readFile(PATH_DB).split("\n");
+        try(Connection connection = getConnection();
+            PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS") ) {
+            ResultSet result = roomStatement.executeQuery();
+            if(result.isBeforeFirst())
+                while (result.next()) {
+                    long room_Id = result.getLong(1);
+                    int guestsNum = result.getInt(2);
+                    double price = result.getDouble(3);
+                    boolean breakfast = Boolean.valueOf(result.getString(4));
+                    boolean pets = Boolean.valueOf(result.getString(5));
+                    Date dateFrom = new Date(result.getDate(6).getTime());
+                    long hotelId = result.getLong(7);
 
-        for(String room : loadedRooms)
-            if(!room.isEmpty())
-                rooms.add(Room.stringToObject(room));
+                    Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getHotelById(hotelId));
+                    room.setId(room_Id);
+                    rooms.add(room);
+                }
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + "Issues with selecting all rooms");
+        }
         return rooms;
     }
 
-    public Room getRoomByID(long id) throws Exception{
-        for(Room room : getAll())
-            if(room.getId() == id)
-                return room;
-        return null;
+    public Room getRoomByID(long id) throws SQLException{
+        Room room = null;
+        try(Connection connection = getConnection();
+            PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?") ) {
+            roomStatement.setLong(1, id);
+            ResultSet result = roomStatement.executeQuery();
+            if(result.isBeforeFirst())
+                while (result.next()) {
+                    long room_Id = result.getLong(1);
+                    int guestsNum = result.getInt(2);
+                    double price = result.getDouble(3);
+                    boolean breakfast = Boolean.valueOf(result.getString(4));
+                    boolean pets = Boolean.valueOf(result.getString(5));
+                    Date dateFrom = new Date(result.getDate(6).getTime());
+                    long hotelId = result.getLong(7);
+
+                    room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getHotelById(hotelId));
+                    room.setId(room_Id);
+                }
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + "Issues with searching room by ID: " + id);
+        }
+        return room;
     }
 
 }

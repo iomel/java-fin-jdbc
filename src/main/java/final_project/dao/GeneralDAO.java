@@ -1,53 +1,17 @@
 package final_project.dao;
 
-import final_project.utils.BaseEntity;
-import final_project.utils.FilesIO;
-import final_project.utils.exceptions.BadRequestException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
-import java.io.IOException;
-import java.util.TreeSet;
+public class GeneralDAO {
 
-public abstract class GeneralDAO<T extends BaseEntity> {
+    private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.c88oq4boivpv.eu-west-2.rds.amazonaws.com:1521:ORCL";
+    private static final String USER = "main";
+    private static final String PASS = "AWS_Admin";
 
-    protected T add(String path, T t) throws Exception {
-        hasDuplicate(t.getId());
-        try {
-            FilesIO.writeFile(path, t.toString(), true);
-        } catch (Exception e) {
-            throw new IOException("Can't add " + t.getClass().getSimpleName() + " " + t.getId() + " " + e);
-        }
-        return t;
-    }
-
-    abstract TreeSet<T> getAll() throws Exception;
-
-    protected void delete(String path, long id) throws Exception {
-        hasEntity(id);
-
-        String content = FilesIO.readFile(path).concat("\n").replaceAll("\n\n", "\n");
-        String itemToDelete = "";
-        for (T t : getAll())
-            if (t.getId() == id) {
-                itemToDelete = t.toString();
-                break;
-            }
-        content = content.replace(itemToDelete, "");
-        FilesIO.writeFile(path, content, false);
-    }
-
-    protected void hasEntity(long id) throws BadRequestException {
-        try {
-            hasDuplicate(id);
-        } catch (Exception e) {
-            return;
-        }
-        throw new BadRequestException("hasEntity method error - no such entity! BaseEntity ID:" + id);
-    }
-
-    protected void hasDuplicate(long id) throws Exception {
-        for (T t : getAll())
-            if (t.getId() == id)
-                throw new BadRequestException("hasDuplicate error - duplicated entity! " + t.getClass().getSimpleName() + "_ID: " + id);
+    Connection getConnection()throws SQLException {
+        return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
 }

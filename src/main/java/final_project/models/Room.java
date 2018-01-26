@@ -74,19 +74,4 @@ public class Room implements BaseEntity, Comparable<Room> {
         return hotel;
     }
 
-    public static Room stringToObject(String roomString) throws ParseException {
-        String[] params = roomString.split(",");
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d-MMM-yyyy");
-
-        long id = Long.parseLong(params[0]);
-        int numberOfGuests = Integer.parseInt(params[1]);
-        double price = Double.parseDouble(params[2]);
-        boolean breakfastIncluded = Boolean.parseBoolean(params[3]);
-        boolean petsAllowed = Boolean.parseBoolean(params[4]);
-        Date dateAvailableFrom = dateFormat.parse(params[5]);
-        Hotel hotel = Hotel.stringToObject(params[6].replaceAll(";", ","));
-        Room room = new Room(numberOfGuests, price, breakfastIncluded, petsAllowed, dateAvailableFrom, hotel);
-        room.setId(id);
-        return room;
-    }
 }

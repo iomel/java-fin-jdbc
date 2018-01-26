@@ -24,6 +24,7 @@ public class User implements BaseEntity, Comparable<User>{
         this.userType = userType;
     }
 
+
     public long getId() {
         return id;
     }
@@ -60,20 +61,6 @@ public class User implements BaseEntity, Comparable<User>{
 
     public int compareTo(User other){
        return Long.compare(this.getId(),other.getId());
-    }
-
-    public static User stringToObject(String userString){
-        String[] userParams = userString.split(",");
-
-        long id = Long.parseLong(userParams[0]);
-        String userName = userParams[1];
-        String password = userParams[2];
-        String country = userParams[3];
-        int age = Integer.parseInt(userParams[4]);
-        UserType userType = UserType.valueOf(userParams[5]);
-        User user = new User(userName, password, country, age, userType);
-        user.setId(id);
-        return user;
     }
 
     @Override
