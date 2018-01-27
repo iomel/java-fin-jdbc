@@ -29,6 +29,9 @@ public class HotelDAO extends GeneralDAO {
             statement.setString(5, hotel.getStreet());
 
             int result = statement.executeUpdate();
+            if(result == 0)
+                throw new SQLException();
+
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save hotel ID: " + hotel.getId());
         }

@@ -42,6 +42,9 @@ public class OrderDAO extends GeneralDAO {
             statement.setDouble(6, order.getMoneyPaid());
 
             int result = statement.executeUpdate();
+            if(result == 0)
+                throw new SQLException();
+
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save order ID: " + order.getId());
         }

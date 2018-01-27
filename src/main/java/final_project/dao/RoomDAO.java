@@ -35,6 +35,9 @@ public class RoomDAO extends GeneralDAO {
             statement.setLong(7, room.getHotel().getId());
 
             int result = statement.executeUpdate();
+            if(result == 0)
+                throw new SQLException();
+
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save room ID: " + room.getId());
         }

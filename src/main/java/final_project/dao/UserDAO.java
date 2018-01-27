@@ -14,16 +14,12 @@ public class UserDAO extends GeneralDAO {
     public User addUser(User user) throws SQLException {
 
         try(Connection connection = getConnection();
-            PreparedStatement checkIdDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?");
-            PreparedStatement checkNameDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE U_NAME = ?");
+            PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ? OR U_NAME = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?)")) {
-            checkIdDuplicateStatement.setLong(1, user.getId());
-            checkNameDuplicateStatement.setString(1, user.getUserName());
-
-            if(checkIdDuplicateStatement.executeUpdate() != 0)
-                throw new SQLException("User with such ID is registered already! ID: " + user.getId());
-            if(checkNameDuplicateStatement.executeUpdate() != 0)
-                throw new SQLException("User with such Name is registered already! ID: " + user.getId());
+            checkDuplicateStatement.setLong(1, user.getId());
+            checkDuplicateStatement.setString(2, user.getUserName());
+            if(checkDuplicateStatement.executeUpdate() != 0)
+                throw new SQLException("User is registered already! ID: " + user.getId());
 
             statement.setLong(1, user.getId());
             statement.setString(2, user.getUserName());
@@ -33,6 +29,9 @@ public class UserDAO extends GeneralDAO {
             statement.setString(6, user.getUserType().name());
 
             int result = statement.executeUpdate();
+
+            if(result == 0)
+                throw new SQLException();
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save User ID: " + user.getId());
         }
