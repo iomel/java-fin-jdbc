@@ -13,13 +13,19 @@ public class RoomDAO extends GeneralDAO {
     private HotelDAO hotels = new HotelDAO();
 
     public Room addRoom(Room room) throws Exception {
-        if (getRoomByID(room.getId()) != null)
-            throw new SQLException("Room with such ID is registered already! ID: " + room.getId());
 
         try(Connection connection = getConnection();
+            PreparedStatement checkHotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?");
+            PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ROOMS VALUES (?, ?, ?, ?, ?, ?, ?)")){
-            if (hotels.getHotelById(room.getHotel().getId()) == null)
+            checkHotelStatement.setLong(1, room.getHotel().getId());
+            checkDuplicateStatement.setLong(1, room.getId());
+
+            if (checkDuplicateStatement.executeUpdate() > 0)
+                throw new SQLException("Room with such ID is registered already! ID: " + room.getId());
+            if (checkHotelStatement.executeUpdate() == 0)
                 throw new SQLException("There is no such hotel (ID:" + room.getHotel().getId() + ")");
+
             statement.setLong(1, room.getId());
             statement.setInt(2, room.getNumberOfGuests());
             statement.setDouble(3, room.getPrice());

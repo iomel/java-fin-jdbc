@@ -11,19 +11,27 @@ import java.util.TreeSet;
 
 public class OrderDAO extends GeneralDAO {
 
-    private HotelDAO hotels = new HotelDAO();
     private RoomDAO rooms = new RoomDAO();
     private UserDAO users = new UserDAO();
 
     public Order addOrder(Order order) throws SQLException {
-        if (getOrderById(order.getId()) != null)
-            throw new SQLException("Order with such ID is registered already! ID: " + order.getId());
 
         try(Connection connection = getConnection();
+            PreparedStatement checkHotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?");
+            PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?");
+            PreparedStatement checkRoomStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?");
+            PreparedStatement checkOrderStatement = connection.prepareStatement("SELECT * FROM ORDERS WHERE ID = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ORDERS VALUES (?, ?, ?, ?, ?, ?)")){
-            if (hotels.getHotelById(order.getRoom().getHotel().getId()) == null
-                    || rooms.getRoomByID(order.getRoom().getId()) == null
-                    || users.getUserByID(order.getUser().getId()) == null)
+
+            checkHotelStatement.setLong(1, order.getRoom().getHotel().getId());
+            checkUserStatement.setLong(1, order.getUser().getId());
+            checkRoomStatement.setLong(1, order.getRoom().getId());
+            checkOrderStatement.setLong(1, order.getId());
+
+            if(checkOrderStatement.executeUpdate() != 0)
+                throw new SQLException("Order with such ID is registered already! ID: " + order.getId());
+            if (checkHotelStatement.executeUpdate() != 0 || checkRoomStatement.executeUpdate() != 0
+                    || checkUserStatement.executeUpdate() != 0)
                 throw new SQLException("Wrong some order's instance(room : hotel : user)");
 
             statement.setLong(1, order.getId());
