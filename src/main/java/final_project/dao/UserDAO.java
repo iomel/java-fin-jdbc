@@ -28,9 +28,7 @@ public class UserDAO extends GeneralDAO {
             statement.setInt(5, user.getAge());
             statement.setString(6, user.getUserType().name());
 
-            int result = statement.executeUpdate();
-
-            if(result == 0)
+            if(statement.executeUpdate() == 0)
                 throw new SQLException();
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save User ID: " + user.getId());
@@ -38,14 +36,8 @@ public class UserDAO extends GeneralDAO {
         return user;
     }
 
-    public void deleteUser(long id) throws Exception{
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM USERS WHERE ID = ?")) {
-            statement.setLong(1, id);
-            int result = statement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue with deleting user ID: " + id);
-        }
+    public void deleteUser(long id) throws SQLException{
+        delete("USERS", id);
     }
 
     public TreeSet<User> getAll() throws SQLException {

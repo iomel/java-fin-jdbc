@@ -28,8 +28,7 @@ public class HotelDAO extends GeneralDAO {
             statement.setString(4, hotel.getCity());
             statement.setString(5, hotel.getStreet());
 
-            int result = statement.executeUpdate();
-            if(result == 0)
+            if(statement.executeUpdate() == 0)
                 throw new SQLException();
 
         } catch (SQLException e) {
@@ -38,14 +37,8 @@ public class HotelDAO extends GeneralDAO {
         return hotel;
     }
 
-    public void deleteHotel(long id) throws Exception{
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM HOTELS WHERE ID = ?")) {
-            statement.setLong(1, id);
-            int result = statement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue with deleting hotel ID: " + id);
-        }
+    public void deleteHotel(long id) throws SQLException{
+        delete("HOTELS", id);
     }
 
     public TreeSet<Hotel> getAll() throws SQLException {

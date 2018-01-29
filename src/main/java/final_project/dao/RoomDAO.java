@@ -34,10 +34,8 @@ public class RoomDAO extends GeneralDAO {
             statement.setDate(6, new java.sql.Date(room.getDateAvailableFrom().getTime()));
             statement.setLong(7, room.getHotel().getId());
 
-            int result = statement.executeUpdate();
-            if(result == 0)
+            if(statement.executeUpdate() == 0)
                 throw new SQLException();
-
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save room ID: " + room.getId());
         }
@@ -45,14 +43,8 @@ public class RoomDAO extends GeneralDAO {
         return room;
     }
 
-    public void deleteRoom(long id) throws Exception {
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM ROOMS WHERE ID = ?")) {
-            statement.setLong(1, id);
-            int result = statement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue with deleting room ID: " + id);
-        }
+    public void deleteRoom(long id) throws SQLException {
+        delete("ROOMS", id);
     }
 
     public TreeSet<Room> getAll() throws Exception {

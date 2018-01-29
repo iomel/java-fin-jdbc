@@ -41,10 +41,8 @@ public class OrderDAO extends GeneralDAO {
             statement.setDate(5, new java.sql.Date(order.getDateTo().getTime()));
             statement.setDouble(6, order.getMoneyPaid());
 
-            int result = statement.executeUpdate();
-            if(result == 0)
+            if(statement.executeUpdate() == 0)
                 throw new SQLException();
-
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save order ID: " + order.getId());
         }
@@ -52,13 +50,7 @@ public class OrderDAO extends GeneralDAO {
     }
 
     public void deleteOrder(long id) throws SQLException{
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("DELETE FROM ORDERS WHERE ID = ?")) {
-            statement.setLong(1, id);
-            int result = statement.executeUpdate();
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue with deleting room ID: " + id);
-        }
+        delete("ORDERS", id);
     }
 
     public TreeSet<Order> getAll() throws Exception {
