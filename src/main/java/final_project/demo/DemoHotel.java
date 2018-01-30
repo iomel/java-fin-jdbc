@@ -10,7 +10,7 @@ public class DemoHotel {
     public static void main(String[] args) throws Exception{
         HotelController controller = new HotelController();
         UserDAO userDAO = new UserDAO();
-        User user = userDAO.getUserByID(12);
+        User user = userDAO.getById(12);
 
         Hotel hotel1 = new Hotel("Ibis", "Ukraine", "Kiev", "Khreshatic" );
         Hotel hotel2 = new Hotel("Holiday Inn", "Ukraine", "Kiev", "Maidan Nezalezhnosti" );

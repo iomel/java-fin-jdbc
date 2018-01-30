@@ -16,11 +16,11 @@ public class DemoRoom {
         RoomController controller = new RoomController();
         HotelDAO hotels = new HotelDAO();
         UserDAO users = new UserDAO();
-        User user =  users.getUserByID(12);
-        Hotel hotel1 = hotels.getHotelById(307905891483779333L);
+        User user =  users.getById(12);
+        Hotel hotel1 = hotels.getById(307905891483779333L);
         Room room1 = new Room(3, 134,false,false, new Date(), hotel1);
         Room room2 = new Room(2, 164,true,false, new Date(), hotel1);
-        Hotel hotel2 = hotels.getHotelById(688945267384385311L);
+        Hotel hotel2 = hotels.getById(688945267384385311L);
         Room room3 = new Room(2, 124,false,false, new Date(), hotel2);
         Room room4 = new Room(2, 144,true,false, new Date(), hotel2);
 

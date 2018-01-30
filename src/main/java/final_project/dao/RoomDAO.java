@@ -9,21 +9,17 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.TreeSet;
 
-public class RoomDAO extends GeneralDAO {
+public class RoomDAO extends GeneralDAO<Room> {
     private HotelDAO hotels = new HotelDAO();
 
     public Room addRoom(Room room) throws Exception {
 
         try(Connection connection = getConnection();
-            PreparedStatement checkHotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?");
-            PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ROOMS VALUES (?, ?, ?, ?, ?, ?, ?)")){
-            checkHotelStatement.setLong(1, room.getHotel().getId());
-            checkDuplicateStatement.setLong(1, room.getId());
 
-            if (checkDuplicateStatement.executeUpdate() > 0)
+            if (getById(connection, room.getId()) != null)
                 throw new SQLException("Room with such ID is registered already! ID: " + room.getId());
-            if (checkHotelStatement.executeUpdate() == 0)
+            if (hotels.getById(connection, room.getHotel().getId()) == null)
                 throw new SQLException("There is no such hotel (ID:" + room.getHotel().getId() + ")");
 
             statement.setLong(1, room.getId());
@@ -62,7 +58,7 @@ public class RoomDAO extends GeneralDAO {
                     Date dateFrom = new Date(result.getDate(6).getTime());
                     long hotelId = result.getLong(7);
 
-                    Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getHotelById(hotelId));
+                    Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getById(connection, hotelId));
                     room.setId(room_Id);
                     rooms.add(room);
                 }
@@ -72,10 +68,9 @@ public class RoomDAO extends GeneralDAO {
         return rooms;
     }
 
-    public Room getRoomByID(long id) throws SQLException{
+    public Room getById(Connection connection, long id) throws SQLException{
         Room room = null;
-        try(Connection connection = getConnection();
-            PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?") ) {
+        try(PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?") ) {
             roomStatement.setLong(1, id);
             ResultSet result = roomStatement.executeQuery();
             if(result.isBeforeFirst())
@@ -88,7 +83,7 @@ public class RoomDAO extends GeneralDAO {
                     Date dateFrom = new Date(result.getDate(6).getTime());
                     long hotelId = result.getLong(7);
 
-                    room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getHotelById(hotelId));
+                    room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotels.getById(connection, hotelId));
                     room.setId(room_Id);
                 }
         } catch (SQLException e) {

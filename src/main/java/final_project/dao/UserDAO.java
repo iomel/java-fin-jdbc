@@ -9,18 +9,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.TreeSet;
 
-public class UserDAO extends GeneralDAO {
+public class UserDAO extends GeneralDAO <User>{
 
     public User addUser(User user) throws SQLException {
 
         try(Connection connection = getConnection();
-            PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ? OR U_NAME = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?)")) {
-            checkDuplicateStatement.setLong(1, user.getId());
-            checkDuplicateStatement.setString(2, user.getUserName());
-            if(checkDuplicateStatement.executeUpdate() != 0)
-                throw new SQLException("User is registered already! ID: " + user.getId());
-
+            checkUserDuplicate(connection, user.getId(), user.getUserName());
             statement.setLong(1, user.getId());
             statement.setString(2, user.getUserName());
             statement.setString(3, user.getPassword());
@@ -65,10 +60,9 @@ public class UserDAO extends GeneralDAO {
         return users;
     }
 
-    public User getUserByID(long id) throws SQLException {
+    public User getById(Connection connection, long id) throws SQLException {
         User user = null;
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?")) {
+        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?")) {
             statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
             if(result.isBeforeFirst())
@@ -88,4 +82,13 @@ public class UserDAO extends GeneralDAO {
         }
         return user;
     }
+
+    private void checkUserDuplicate (Connection connection, long id, String username) throws SQLException{
+        PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ? OR U_NAME = ?");
+        checkDuplicateStatement.setLong(1, id);
+        checkDuplicateStatement.setString(2, username);
+        if(checkDuplicateStatement.executeUpdate() != 0)
+            throw new SQLException("User is registered already! ID: " + id);
+    }
+
 }

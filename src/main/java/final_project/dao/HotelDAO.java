@@ -11,15 +11,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.TreeSet;
 
-public class HotelDAO extends GeneralDAO {
+public class HotelDAO extends GeneralDAO<Hotel> {
 
     public Hotel addHotel(Hotel hotel) throws Exception {
 
         try(Connection connection = getConnection();
-            PreparedStatement checkHotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?");
             PreparedStatement statement = connection.prepareStatement("INSERT INTO HOTELS VALUES (?, ?, ?, ?, ?)")) {
-            checkHotelStatement.setLong(1, hotel.getId());
-            if (checkHotelStatement.executeUpdate() != 0)
+            if (getById(connection, hotel.getId()) != null)
                 throw new SQLException("Hotel with such ID is registered already! ID: " + hotel.getId());
 
             statement.setLong(1, hotel.getId());
@@ -64,10 +62,9 @@ public class HotelDAO extends GeneralDAO {
         return hotels;
     }
 
-    public Hotel getHotelById(long id) throws SQLException {
+    public Hotel getById(Connection connection, long id) throws SQLException {
         Hotel hotel = null;
-        try(Connection connection = getConnection();
-            PreparedStatement hotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?") ) {
+        try(PreparedStatement hotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE ID = ?") ) {
             hotelStatement.setLong(1, id);
             ResultSet hotelResult = hotelStatement.executeQuery();
             if(hotelResult.isBeforeFirst())

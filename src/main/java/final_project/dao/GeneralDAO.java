@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class GeneralDAO {
+public abstract class GeneralDAO <T> {
 
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.c88oq4boivpv.eu-west-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
@@ -22,6 +22,19 @@ public class GeneralDAO {
             throw  new SQLException( e.getMessage() + " Issue with deleting ID: " + id + " from DB: " + dbName);
         }
     }
+
+    public T getById(long id) throws SQLException {
+        T t;
+        try(Connection connection = getConnection()){
+            t = getById(connection, id);
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + "HotelDAO.getHotelById");
+        }
+        return t;
+    }
+
+    abstract T getById(Connection connection, long id) throws SQLException ;
+
 
     Connection getConnection()throws SQLException {
         return DriverManager.getConnection(DB_URL, USER, PASS);

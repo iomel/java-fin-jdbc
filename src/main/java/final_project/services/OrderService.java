@@ -15,8 +15,8 @@ public class OrderService {
     private OrderDAO orderDAO = new OrderDAO();
 
     public void bookRoom(long roomId, long userId) throws Exception {
-        Room room = roomDAO.getRoomByID(roomId);
-        User user = userDAO.getUserByID(userId);
+        Room room = roomDAO.getById(roomId);
+        User user = userDAO.getById(userId);
         Order newOrder = new Order(user, room, new Date(), new Date(), 0);
         orderDAO.addOrder(newOrder);
     }
