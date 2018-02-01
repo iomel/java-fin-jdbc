@@ -1,9 +1,12 @@
 package final_project.dao;
 
+import final_project.models.User;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public abstract class GeneralDAO <T> {
 
@@ -23,14 +26,22 @@ public abstract class GeneralDAO <T> {
         }
     }
 
-    public T getById(long id) throws SQLException {
-        T t;
+    public ArrayList<T> getAll() throws SQLException {
         try(Connection connection = getConnection()){
-            t = getById(connection, id);
+            return getAll(connection);
         } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "HotelDAO.getHotelById");
+            throw  new SQLException( e.getMessage() + "Issues with selecting all items in " + this.getClass().getSimpleName());
         }
-        return t;
+    }
+
+    abstract ArrayList<T> getAll(Connection connection) throws SQLException;
+
+    public T getById(long id) throws SQLException {
+        try(Connection connection = getConnection()){
+            return getById(connection, id);
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + this.getClass().getSimpleName() + ".getById issue! ID: " + id);
+        }
     }
 
     abstract T getById(Connection connection, long id) throws SQLException ;

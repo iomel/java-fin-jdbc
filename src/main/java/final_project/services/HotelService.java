@@ -12,25 +12,15 @@ public class HotelService {
     private HotelDAO hotelDAO = new HotelDAO();
 
     public ArrayList<Hotel> findHotelByName(String name) throws Exception {
-        ArrayList<Hotel> hotels = new ArrayList<>();
         if (name == null)
             throw new BadRequestException("findHotelByName error - hotel name is NULL!");
-
-        for (Hotel hotel : hotelDAO.getAll())
-            if(hotel.getHotelName().equals(name))
-                hotels.add(hotel);
-        return hotels;
+        return hotelDAO.getByName(name);
     }
 
     public ArrayList<Hotel> findHotelByCity(String city) throws Exception {
-        ArrayList<Hotel> hotels = new ArrayList<>();
         if (city == null)
             throw new BadRequestException("findHotelByCity error - city is NULL!");
-
-        for (Hotel hotel : hotelDAO.getAll())
-            if(hotel.getCity().equals(city))
-                hotels.add(hotel);
-        return hotels;
+        return hotelDAO.getByCity(city);
 
     }
     public Hotel addHotel(Hotel hotel) throws Exception {

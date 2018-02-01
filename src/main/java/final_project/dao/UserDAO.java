@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class UserDAO extends GeneralDAO <User>{
@@ -22,10 +23,7 @@ public class UserDAO extends GeneralDAO <User>{
             statement.setString(4, user.getCountry());
             statement.setInt(5, user.getAge());
             statement.setString(6, user.getUserType().name());
-
-            if(statement.executeUpdate() == 0)
-                throw new SQLException();
-        } catch (SQLException e) {
+       } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save User ID: " + user.getId());
         }
         return user;
@@ -35,48 +33,43 @@ public class UserDAO extends GeneralDAO <User>{
         delete("USERS", id);
     }
 
-    public TreeSet<User> getAll() throws SQLException {
-        TreeSet<User> users = new TreeSet<>();
-        try(Connection connection = getConnection();
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS")) {
+    public ArrayList<User> getAll(Connection connection) throws SQLException {
+        ArrayList<User> users = new ArrayList<>();
+        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS")) {
             ResultSet result = statement.executeQuery();
-            if(result.isBeforeFirst())
-                while (result.next()) {
-                    long user_Id = result.getLong(1);
-                    String name = result.getString(2);
-                    String password = result.getString(3);
-                    String country = result.getString(4);
-                    int age = result.getInt(5);
-                    UserType u_type = UserType.valueOf(result.getString(6));
-
-                    User user = new User(name, password, country, age, u_type);
-                    user.setId(user_Id);
-                    users.add(user);
-                }
+            while (result.next()) {
+                long userId = result.getLong(1);
+                String name = result.getString(2);
+                String password = result.getString(3);
+                String country = result.getString(4);
+                int age = result.getInt(5);
+                UserType uType = UserType.valueOf(result.getString(6));
+                User user = new User(name, password, country, age, uType);
+                user.setId(userId);
+                users.add(user);
+            }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all users");
         }
-
         return users;
     }
+
 
     public User getById(Connection connection, long id) throws SQLException {
         User user = null;
         try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?")) {
             statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
-            if(result.isBeforeFirst())
-                while (result.next()) {
-                    long user_Id = result.getLong(1);
-                    String name = result.getString(2);
-                    String password = result.getString(3);
-                    String country = result.getString(4);
-                    int age = result.getInt(5);
-                    UserType u_type = UserType.valueOf(result.getString(6));
-
-                    user = new User(name, password, country, age, u_type);
-                    user.setId(user_Id);
-                }
+            while (result.next()) {
+                long userId = result.getLong(1);
+                String name = result.getString(2);
+                String password = result.getString(3);
+                String country = result.getString(4);
+                int age = result.getInt(5);
+                UserType uType = UserType.valueOf(result.getString(6));
+                user = new User(name, password, country, age, uType);
+                user.setId(userId);
+            }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with searching user by ID: " + id);
         }
