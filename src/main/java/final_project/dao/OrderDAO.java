@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TreeMap;
+import java.util.*;
 
 public class OrderDAO extends GeneralDAO<Order> {
 
@@ -47,27 +45,42 @@ public class OrderDAO extends GeneralDAO<Order> {
 
     public ArrayList<Order> getAll(Connection connection) throws SQLException {
         ArrayList<Order> orders = new ArrayList<>();
+        TreeMap<Long, User> usersList = new TreeMap<>();
+        TreeMap<Long, Room> roomsList = new TreeMap<>();
+        HashSet<Long> userIdList = new HashSet<>();
+        HashSet<Long> roomIdList = new HashSet<>();
 
         try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS")) {
-            TreeMap<Long, User> usersList = prepareUserList(connection);
-            TreeMap<Long, Room> roomsList = prepareRoomList(connection);
             ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                long orderId = result.getLong(1);
-                long userId = result.getLong(2);
-                long roomId = result.getLong(3);
-                Date dateFrom = new Date(result.getDate(4).getTime());
-                Date dateTo = new Date(result.getDate(5).getTime());
-                double moneyPaid = result.getDouble(6);
+            if(result.isBeforeFirst()) {
+                while (result.next()) {
+                    userIdList.add(result.getLong(2));
+                    roomIdList.add(result.getLong(3));
+                }
+                for (User user : userDAO.getAll(connection))
+                    if (userIdList.contains(user.getId()))
+                        usersList.put(user.getId(), user);
+                for (Room room : roomDAO.getAll(connection))
+                    if (roomIdList.contains(room.getId()))
+                        roomsList.put(room.getId(), room);
 
-                Order order = new Order(usersList.get(userId), roomsList.get(roomId), dateFrom, dateTo, moneyPaid);
-                order.setId(orderId);
-                orders.add(order);
+                result.beforeFirst();
+                while (result.next()) {
+                    long orderId = result.getLong(1);
+                    long userId = result.getLong(2);
+                    long roomId = result.getLong(3);
+                    Date dateFrom = new Date(result.getDate(4).getTime());
+                    Date dateTo = new Date(result.getDate(5).getTime());
+                    double moneyPaid = result.getDouble(6);
+
+                    Order order = new Order(usersList.get(userId), roomsList.get(roomId), dateFrom, dateTo, moneyPaid);
+                    order.setId(orderId);
+                    orders.add(order);
+                }
             }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all roomDAO");
         }
-
         return orders;
     }
 
@@ -91,36 +104,4 @@ public class OrderDAO extends GeneralDAO<Order> {
         }
         return order;
     }
-
-    private TreeMap<Long, User> prepareUserList(Connection connection) throws SQLException{
-        TreeMap<Long, User> usersList = new TreeMap<>();
-        ArrayList<Long> userIdList = new ArrayList<>();
-        PreparedStatement userStatement = connection.prepareStatement("SELECT U_ID FROM ORDERS");
-        ResultSet result = userStatement.executeQuery();
-        while (result.next())
-            userIdList.add(result.getLong(1));
-
-        for (User user : userDAO.getAll(connection))
-            if(userIdList.contains(user.getId()))
-                usersList.put(user.getId(), user);
-
-        return usersList;
-    }
-
-    private TreeMap<Long, Room> prepareRoomList(Connection connection) throws SQLException{
-        TreeMap<Long, Room> roomsList = new TreeMap<>();
-        ArrayList<Long> roomIdList = new ArrayList<>();
-        PreparedStatement roomStatement = connection.prepareStatement("SELECT R_ID FROM ORDERS");
-        ResultSet result = roomStatement.executeQuery();
-        while (result.next())
-            roomIdList.add(result.getLong(1));
-
-        for (Room room : roomDAO.getAll(connection))
-            if (roomIdList.contains(room.getId()))
-                roomsList.put(room.getId(), room);
-
-        return roomsList;
-    }
-
-
 }
