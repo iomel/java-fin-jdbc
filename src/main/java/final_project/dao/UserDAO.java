@@ -10,6 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class UserDAO extends GeneralDAO <User>{
+    private final static String USER_DB = "USERS";
+
+    public UserDAO() {
+        super(USER_DB);
+    }
 
     public User addUser(User user) throws SQLException {
 
@@ -28,30 +33,6 @@ public class UserDAO extends GeneralDAO <User>{
         return user;
     }
 
-    public void deleteUser(long id) throws SQLException{
-        delete("USERS", id);
-    }
-
-    public ArrayList<User> getAll(Connection connection) throws SQLException {
-        ArrayList<User> users = new ArrayList<>();
-        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS")) {
-            ResultSet result = statement.executeQuery();
-            while (result.next())
-                users.add(buildItem(result));
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with selecting all users");
-        }
-        return users;
-    }
-
-    public User getById(long id) throws SQLException {
-        return getById("USERS", id);
-    }
-
-    public User getById(Connection connection, long id) throws SQLException {
-        return getById(connection, "USERS", id);
-    }
-
     private void checkUserDuplicate (Connection connection, long id, String username) throws SQLException{
         PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ? OR U_NAME = ?");
         checkDuplicateStatement.setLong(1, id);
@@ -60,7 +41,8 @@ public class UserDAO extends GeneralDAO <User>{
             throw new SQLException("User is registered already! ID: " + id);
     }
 
-    protected User buildItem(ResultSet result) throws SQLException {
+    @Override
+    protected User buildItem(Connection connection, ResultSet result) throws SQLException {
         long userId = result.getLong(1);
         String name = result.getString(2);
         String password = result.getString(3);
@@ -69,8 +51,14 @@ public class UserDAO extends GeneralDAO <User>{
         UserType uType = UserType.valueOf(result.getString(6));
         User user = new User(name, password, country, age, uType);
         user.setId(userId);
-
         return user;
     }
 
+    @Override
+    protected ArrayList<User> buildItemList(Connection connection, ResultSet result) throws SQLException {
+        ArrayList<User> users = new ArrayList<>();
+        while (result.next())
+            users.add(buildItem(connection, result));
+        return users;
+    }
 }

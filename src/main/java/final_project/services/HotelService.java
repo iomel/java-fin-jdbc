@@ -31,7 +31,7 @@ public class HotelService {
     public void deleteHotel(Hotel hotel) throws Exception {
 
         if (hotel != null)
-            hotelDAO.deleteHotel(hotel.getId());
+            hotelDAO.delete(hotel.getId());
     }
 
     private void validate(Hotel hotel)throws BadRequestException {

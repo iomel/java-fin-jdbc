@@ -15,6 +15,11 @@ public class OrderDAO extends GeneralDAO<Order> {
     private RoomDAO roomDAO = new RoomDAO();
     private UserDAO userDAO = new UserDAO();
     private HotelDAO hotelDAO = new HotelDAO();
+    private final static String ORDER_DB = "ORDERS";
+
+    public OrderDAO() {
+        super(ORDER_DB);
+    }
 
     public Order addOrder(Order order) throws SQLException {
 
@@ -40,62 +45,38 @@ public class OrderDAO extends GeneralDAO<Order> {
         return order;
     }
 
-    public void deleteOrder(long id) throws SQLException{
-        delete("ORDERS", id);
-    }
-
-    public ArrayList<Order> getAll(Connection connection) throws SQLException {
-        ArrayList<Order> orders = new ArrayList<>();
-        ArrayList<User> users = userDAO.getAll(connection);
-        ArrayList<Room> rooms = roomDAO.getAll(connection);
-        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS")) {
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                Order order = buildItem(result);
-                for (User user : users)
-                    if(user.getId() == order.getUser().getId()) {
-                        order.setUser(user);
-                        break;
-                    }
-                for (Room room : rooms)
-                    if (room.getId() == order.getRoom().getId()) {
-                        order.setRoom(room);
-                        break;
-                    }
-                orders.add(order);
-            }
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with selecting all roomDAO");
-        }
-        return orders;
-    }
-
-    public Order getById (Connection connection, long id) throws SQLException{
-        Order order = null;
-        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS WHERE ID = ? ") ) {
-            statement.setLong(1, id);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                order = buildItem(result);
-                order.setUser(userDAO.getById(connection, order.getUser().getId()));
-                order.setRoom(roomDAO.getById(connection, order.getRoom().getId()));
-            }
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with selecting all roomDAO");
-        }
-        return order;
-    }
-
-    protected Order buildItem(ResultSet result) throws SQLException {
+    @Override
+    protected Order buildItem(Connection connection, ResultSet result) throws SQLException {
         long orderId = result.getLong(1);
         long userId = result.getLong(2);
         long roomId = result.getLong(3);
         Date dateFrom = new Date(result.getDate(4).getTime());
         Date dateTo = new Date(result.getDate(5).getTime());
         double moneyPaid = result.getDouble(6);
-        Order order = new Order(new User(userId), new Room(roomId), dateFrom, dateTo, moneyPaid);
+        Order order = new Order(userDAO.getById(connection, userId), roomDAO.getById(connection, roomId), dateFrom, dateTo, moneyPaid);
         order.setId(orderId);
         return order;
     }
 
+    @Override
+    protected ArrayList<Order> buildItemList(Connection connection, ResultSet result) throws SQLException {
+        ArrayList<Order> orders = new ArrayList<>();
+        ArrayList<User> users = userDAO.getAll(connection);
+        ArrayList<Room> rooms = roomDAO.getAll(connection);
+        while (result.next()) {
+            Order order = buildItem(connection, result);
+            for (User user : users)
+                if(user.getId() == order.getUser().getId()) {
+                    order.setUser(user);
+                    break;
+                }
+            for (Room room : rooms)
+                if (room.getId() == order.getRoom().getId()) {
+                    order.setRoom(room);
+                    break;
+                }
+            orders.add(order);
+        }
+        return orders;
+    }
 }

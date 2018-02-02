@@ -11,8 +11,10 @@ public class DemoUser {
         User user1 = new User("Petro", "aaddaa11", "Ukraine", 29, UserType.USER);
         User user2 = new User("Petya", "11ss", "Moldova", 24, UserType.USER);
         UserDAO udao = new UserDAO();
+        for (User user : udao.getAll())
+            System.out.println(user.toString());
 
-        udao.deleteUser(4646245056540919033L);
+//        udao.deleteUser(4646245056540919033L);
 
 ////        controller.registerUser(user1);
 //        controller.registerUser(user2);

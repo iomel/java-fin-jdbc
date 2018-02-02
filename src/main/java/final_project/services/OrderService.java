@@ -24,7 +24,7 @@ public class OrderService {
     public void cancelReservation(long roomId, long userId) throws Exception {
         for (Order order : orderDAO.getAll())
             if (order.getRoom().getId() == roomId && order.getUser().getId() == userId)
-                orderDAO.deleteOrder(order.getId());
+                orderDAO.delete(order.getId());
     }
 
 }

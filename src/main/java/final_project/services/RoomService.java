@@ -17,7 +17,7 @@ public class RoomService {
 
     public void deleteRoom(Room room) throws Exception {
         if(room != null)
-            roomDAO.deleteRoom(room.getId());
+            roomDAO.delete(room.getId());
     }
 
     public ArrayList<Room> findRooms(Filter filter) throws Exception{

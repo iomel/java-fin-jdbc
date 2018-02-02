@@ -8,6 +8,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class HotelDAO extends GeneralDAO<Hotel> {
+    private final static String HOTEL_DB = "HOTELS";
+
+    public HotelDAO() {
+        super(HOTEL_DB);
+    }
 
     public Hotel addHotel(Hotel hotel) throws Exception {
 
@@ -27,30 +32,6 @@ public class HotelDAO extends GeneralDAO<Hotel> {
         return hotel;
     }
 
-    public void deleteHotel(long id) throws SQLException{
-        delete("HOTELS", id);
-    }
-
-    public ArrayList<Hotel> getAll(Connection connection) throws SQLException {
-        ArrayList<Hotel> hotels = new ArrayList<>();
-        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM HOTELS")) {
-            ResultSet result = statement.executeQuery();
-            while (result.next())
-                hotels.add(buildItem(result));
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with selecting all hotels");
-        }
-        return hotels;
-    }
-
-    public Hotel getById(long id) throws SQLException {
-        return getById("HOTELS", id);
-    }
-
-    public Hotel getById(Connection connection, long id) throws SQLException {
-        return getById(connection, "HOTELS", id);
-    }
-
     public ArrayList<Hotel> getByName(String name) throws SQLException {
         ArrayList<Hotel> hotels = new ArrayList<>();
         try(Connection connection = getConnection();
@@ -58,7 +39,7 @@ public class HotelDAO extends GeneralDAO<Hotel> {
             hotelStatement.setString(1, name);
             ResultSet hotelResult = hotelStatement.executeQuery();
             while (hotelResult.next())
-                hotels.add(buildItem(hotelResult));
+                hotels.add(buildItem(connection, hotelResult));
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with searching room by NAME: " + name);
         }
@@ -71,14 +52,15 @@ public class HotelDAO extends GeneralDAO<Hotel> {
             hotelStatement.setString(1, city);
             ResultSet hotelResult = hotelStatement.executeQuery();
             while (hotelResult.next())
-                hotels.add(buildItem(hotelResult));
+                hotels.add(buildItem(connection, hotelResult));
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with searching room by CITY: " + city);
         }
         return hotels;
     }
 
-    protected Hotel buildItem(ResultSet result) throws SQLException {
+    @Override
+    protected Hotel buildItem(Connection connection, ResultSet result) throws SQLException {
         long id = result.getLong(1);
         String hotelName = result.getString(2);
         String country = result.getString(3);
@@ -87,6 +69,14 @@ public class HotelDAO extends GeneralDAO<Hotel> {
         Hotel hotel = new Hotel(hotelName, country, city, street);
         hotel.setId(id);
         return hotel;
+    }
+
+    @Override
+    protected ArrayList<Hotel> buildItemList(Connection connection, ResultSet result) throws SQLException {
+        ArrayList<Hotel> hotels = new ArrayList<>();
+        while (result.next())
+            hotels.add(buildItem(connection, result));
+        return hotels;
     }
 
 }

@@ -12,6 +12,11 @@ import java.util.Date;
 
 public class RoomDAO extends GeneralDAO<Room> {
     private HotelDAO hotelDAO = new HotelDAO();
+    private final static String ROOM_DB = "ROOMS";
+
+    public RoomDAO() {
+        super(ROOM_DB);
+    }
 
     public Room addRoom(Room room) throws Exception {
 
@@ -33,49 +38,11 @@ public class RoomDAO extends GeneralDAO<Room> {
     } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + " Issue to save room ID: " + room.getId());
         }
-
         return room;
     }
 
-    public void deleteRoom(long id) throws SQLException {
-        delete("ROOMS", id);
-    }
-
-
-    public ArrayList<Room> getAll(Connection connection) throws SQLException {
-        ArrayList<Room> rooms = new ArrayList<>();
-        try(PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS") ) {
-            ResultSet result = roomStatement.executeQuery();
-            ArrayList<Hotel> hotels = hotelDAO.getAll(connection);
-            while (result.next()) {
-                Room room = buildItem(result);
-                for (Hotel hotel : hotels)
-                    if(hotel.getId() == room.getHotel().getId()) {
-                        room.setHotel(hotel);
-                        break;
-                    }
-                rooms.add(room);
-            }
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with selecting all rooms");
-        }
-        return rooms;
-    }
-
-    public Room getById(long id) throws SQLException{
-        Room room = getById("ROOMS", id);
-        room.setHotel(hotelDAO.getById(room.getHotel().getId()));
-        return room;
-    }
-
-
-    public Room getById(Connection connection, long id) throws SQLException{
-        Room room = getById(connection, "ROOMS", id);
-        room.setHotel(hotelDAO.getById(connection, room.getHotel().getId()));
-        return room;
-    }
-
-    protected Room buildItem(ResultSet result) throws SQLException {
+    @Override
+    protected Room buildItem(Connection connection, ResultSet result) throws SQLException {
         long roomId = result.getLong(1);
         int guestsNum = result.getInt(2);
         double price = result.getDouble(3);
@@ -83,10 +50,24 @@ public class RoomDAO extends GeneralDAO<Room> {
         boolean pets = Boolean.valueOf(result.getString(5));
         Date dateFrom = new Date(result.getDate(6).getTime());
         long hotelId = result.getLong(7);
-        Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, new Hotel(hotelId));
+        Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotelDAO.getById(connection, hotelId));
         room.setId(roomId);
-
         return room;
     }
 
+    @Override
+    protected ArrayList<Room> buildItemList(Connection connection, ResultSet result) throws SQLException {
+        ArrayList<Room> rooms = new ArrayList<>();
+        ArrayList<Hotel> hotels = hotelDAO.getAll(connection);
+        while (result.next()) {
+            Room room = buildItem(connection, result);
+            for (Hotel hotel : hotels)
+                if(hotel.getId() == room.getHotel().getId()) {
+                    room.setHotel(hotel);
+                    break;
+                }
+            rooms.add(room);
+        }
+        return rooms;
+    }
 }
