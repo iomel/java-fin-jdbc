@@ -10,12 +10,17 @@ public abstract class GeneralDAO <T> {
     private static final String PASS = "AWS_Admin";
     private static String DB_NAME;
 
+    // SQL queries
+    private static String SELECT_ALL = "SELECT * FROM %s";
+    private static String DELETE_BY_ID = "DELETE FROM %s WHERE ID = ?";
+    private static String SELECT_BY_FIELD = "SELECT * FROM %s WHERE %s = ?";
+
     public GeneralDAO(String dbName) {
         DB_NAME = dbName;
     }
 
     public void delete(long id) throws SQLException {
-        String sql = String.format("DELETE FROM %s WHERE ID = ?", DB_NAME);
+        String sql = String.format(DELETE_BY_ID, DB_NAME);
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
@@ -35,7 +40,7 @@ public abstract class GeneralDAO <T> {
 
     public ArrayList<T> getAll(Connection connection) throws SQLException {
         ArrayList<T> itemsList;
-        String sql = String.format("SELECT * FROM %s", DB_NAME);
+        String sql = String.format(SELECT_ALL, DB_NAME);
         try(PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet result = statement.executeQuery();
             itemsList = buildItemList(connection, result);
@@ -55,7 +60,7 @@ public abstract class GeneralDAO <T> {
 
     public T getById(Connection connection, long id) throws SQLException {
         T t = null;
-        String sql = String.format("SELECT * FROM %s WHERE ID = ?", DB_NAME);
+        String sql = String.format(SELECT_BY_FIELD, DB_NAME, "ID");
         try(PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
@@ -65,6 +70,21 @@ public abstract class GeneralDAO <T> {
             throw  new SQLException( e.getMessage() + "Issues with searching in " + DB_NAME + " by ID: " + id);
         }
         return t;
+    }
+
+    public ArrayList<T> getByTextField(String filed, String value) throws SQLException {
+        ArrayList<T> items = new ArrayList<>();
+        String sql = String.format(SELECT_BY_FIELD, DB_NAME, filed);
+        try(Connection connection = getConnection();
+            PreparedStatement hotelStatement = connection.prepareStatement(sql) ) {
+            hotelStatement.setString(1, value);
+            ResultSet result = hotelStatement.executeQuery();
+            while (result.next())
+                items.add(buildItem(connection, result));
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + "Issues with searching room by " + filed + ": " + value);
+        }
+        return items;
     }
 
     protected abstract T buildItem(Connection connection, ResultSet result) throws SQLException;

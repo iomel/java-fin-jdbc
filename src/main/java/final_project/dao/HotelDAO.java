@@ -32,33 +32,6 @@ public class HotelDAO extends GeneralDAO<Hotel> {
         return hotel;
     }
 
-    public ArrayList<Hotel> getByName(String name) throws SQLException {
-        ArrayList<Hotel> hotels = new ArrayList<>();
-        try(Connection connection = getConnection();
-            PreparedStatement hotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE HOTEL_NAME = ?") ) {
-            hotelStatement.setString(1, name);
-            ResultSet hotelResult = hotelStatement.executeQuery();
-            while (hotelResult.next())
-                hotels.add(buildItem(connection, hotelResult));
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with searching room by NAME: " + name);
-        }
-        return hotels;
-    }
-    public ArrayList<Hotel> getByCity(String city) throws SQLException {
-        ArrayList<Hotel> hotels = new ArrayList<>();
-        try(Connection connection = getConnection();
-            PreparedStatement hotelStatement = connection.prepareStatement("SELECT * FROM HOTELS WHERE CITY = ?") ) {
-            hotelStatement.setString(1, city);
-            ResultSet hotelResult = hotelStatement.executeQuery();
-            while (hotelResult.next())
-                hotels.add(buildItem(connection, hotelResult));
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with searching room by CITY: " + city);
-        }
-        return hotels;
-    }
-
     @Override
     protected Hotel buildItem(Connection connection, ResultSet result) throws SQLException {
         long id = result.getLong(1);

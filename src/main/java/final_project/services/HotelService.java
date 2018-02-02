@@ -14,13 +14,13 @@ public class HotelService {
     public ArrayList<Hotel> findHotelByName(String name) throws Exception {
         if (name == null)
             throw new BadRequestException("findHotelByName error - hotel name is NULL!");
-        return hotelDAO.getByName(name);
+        return hotelDAO.getByTextField("HOTEL_NAME", name);
     }
 
     public ArrayList<Hotel> findHotelByCity(String city) throws Exception {
         if (city == null)
             throw new BadRequestException("findHotelByCity error - city is NULL!");
-        return hotelDAO.getByCity(city);
+        return hotelDAO.getByTextField("CITY", city);
 
     }
     public Hotel addHotel(Hotel hotel) throws Exception {
