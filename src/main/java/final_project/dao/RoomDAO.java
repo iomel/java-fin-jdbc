@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.TreeSet;
 
 public class RoomDAO extends GeneralDAO<Room> {
     private HotelDAO hotelDAO = new HotelDAO();
@@ -49,20 +48,13 @@ public class RoomDAO extends GeneralDAO<Room> {
             ResultSet result = roomStatement.executeQuery();
             ArrayList<Hotel> hotels = hotelDAO.getAll(connection);
             while (result.next()) {
-                long roomId = result.getLong(1);
-                int guestsNum = result.getInt(2);
-                double price = result.getDouble(3);
-                boolean breakfast = Boolean.valueOf(result.getString(4));
-                boolean pets = Boolean.valueOf(result.getString(5));
-                Date dateFrom = new Date(result.getDate(6).getTime());
-                long hotelId = result.getLong(7);
+                Room room = buildItem(result);
                 for (Hotel hotel : hotels)
-                    if(hotel.getId() == hotelId) {
-                        Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotel);
-                        room.setId(roomId);
-                        rooms.add(room);
+                    if(hotel.getId() == room.getHotel().getId()) {
+                        room.setHotel(hotel);
                         break;
                     }
+                rooms.add(room);
             }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all rooms");
@@ -72,24 +64,22 @@ public class RoomDAO extends GeneralDAO<Room> {
 
 
     public Room getById(Connection connection, long id) throws SQLException{
-        Room room = null;
-        try(PreparedStatement roomStatement = connection.prepareStatement("SELECT * FROM ROOMS WHERE ID = ?") ) {
-            roomStatement.setLong(1, id);
-            ResultSet result = roomStatement.executeQuery();
-            while (result.next()) {
-                long roomId = result.getLong(1);
-                int guestsNum = result.getInt(2);
-                double price = result.getDouble(3);
-                boolean breakfast = Boolean.valueOf(result.getString(4));
-                boolean pets = Boolean.valueOf(result.getString(5));
-                Date dateFrom = new Date(result.getDate(6).getTime());
-                long hotelId = result.getLong(7);
-                room = new Room(guestsNum, price, breakfast, pets, dateFrom, hotelDAO.getById(connection, hotelId));
-                room.setId(roomId);
-            }
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with searching room by ID: " + id);
-        }
+        Room room = getById(connection, "ROOMS", id);
+        room.setHotel(hotelDAO.getById(connection, room.getHotel().getId()));
+        return room;
+    }
+
+    protected Room buildItem(ResultSet result) throws SQLException {
+        long roomId = result.getLong(1);
+        int guestsNum = result.getInt(2);
+        double price = result.getDouble(3);
+        boolean breakfast = Boolean.valueOf(result.getString(4));
+        boolean pets = Boolean.valueOf(result.getString(5));
+        Date dateFrom = new Date(result.getDate(6).getTime());
+        long hotelId = result.getLong(7);
+        Room room = new Room(guestsNum, price, breakfast, pets, dateFrom, new Hotel(hotelId));
+        room.setId(roomId);
+
         return room;
     }
 

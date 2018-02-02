@@ -14,6 +14,10 @@ public class User implements BaseEntity, Comparable<User>{
     private int age;
     private UserType userType;
 
+    public User(long id) {
+        this.id = id;
+    }
+
     public User(String userName, String password, String country, int age, UserType userType) {
         long newId = new Random().nextLong();
         this.id = newId > 0 ? newId : newId * (-1);

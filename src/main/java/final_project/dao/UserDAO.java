@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.TreeSet;
 
 public class UserDAO extends GeneralDAO <User>{
 
@@ -37,17 +36,8 @@ public class UserDAO extends GeneralDAO <User>{
         ArrayList<User> users = new ArrayList<>();
         try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS")) {
             ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                long userId = result.getLong(1);
-                String name = result.getString(2);
-                String password = result.getString(3);
-                String country = result.getString(4);
-                int age = result.getInt(5);
-                UserType uType = UserType.valueOf(result.getString(6));
-                User user = new User(name, password, country, age, uType);
-                user.setId(userId);
-                users.add(user);
-            }
+            while (result.next())
+                users.add(buildItem(result));
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all users");
         }
@@ -56,24 +46,7 @@ public class UserDAO extends GeneralDAO <User>{
 
 
     public User getById(Connection connection, long id) throws SQLException {
-        User user = null;
-        try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ?")) {
-            statement.setLong(1, id);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                long userId = result.getLong(1);
-                String name = result.getString(2);
-                String password = result.getString(3);
-                String country = result.getString(4);
-                int age = result.getInt(5);
-                UserType uType = UserType.valueOf(result.getString(6));
-                user = new User(name, password, country, age, uType);
-                user.setId(userId);
-            }
-        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + "Issues with searching user by ID: " + id);
-        }
-        return user;
+        return getById(connection, "USERS", id);
     }
 
     private void checkUserDuplicate (Connection connection, long id, String username) throws SQLException{
@@ -82,6 +55,19 @@ public class UserDAO extends GeneralDAO <User>{
         checkDuplicateStatement.setString(2, username);
         if(checkDuplicateStatement.executeUpdate() != 0)
             throw new SQLException("User is registered already! ID: " + id);
+    }
+
+    protected User buildItem(ResultSet result) throws SQLException {
+        long userId = result.getLong(1);
+        String name = result.getString(2);
+        String password = result.getString(3);
+        String country = result.getString(4);
+        int age = result.getInt(5);
+        UserType uType = UserType.valueOf(result.getString(6));
+        User user = new User(name, password, country, age, uType);
+        user.setId(userId);
+
+        return user;
     }
 
 }

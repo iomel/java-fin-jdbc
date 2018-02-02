@@ -2,7 +2,6 @@ package final_project.models;
 
 import final_project.utils.BaseEntity;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -18,6 +17,10 @@ public class Room implements BaseEntity, Comparable<Room> {
     private Hotel hotel;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d-MMM-yyyy");
+
+    public Room(long id) {
+        this.id = id;
+    }
 
     public Room(int numberOfGuests, double price, boolean breakfastIncluded, boolean petsAllowed, Date dateAvailableFrom, Hotel hotel) {
         long newId = new Random().nextLong();
@@ -53,6 +56,10 @@ public class Room implements BaseEntity, Comparable<Room> {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public void setHotel(Hotel hotel) {
+        this.hotel = hotel;
     }
 
     @Override

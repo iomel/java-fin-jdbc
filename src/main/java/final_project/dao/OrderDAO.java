@@ -3,6 +3,7 @@ package final_project.dao;
 import final_project.models.Order;
 import final_project.models.Room;
 import final_project.models.User;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,38 +46,23 @@ public class OrderDAO extends GeneralDAO<Order> {
 
     public ArrayList<Order> getAll(Connection connection) throws SQLException {
         ArrayList<Order> orders = new ArrayList<>();
-        TreeMap<Long, User> usersList = new TreeMap<>();
-        TreeMap<Long, Room> roomsList = new TreeMap<>();
-        HashSet<Long> userIdList = new HashSet<>();
-        HashSet<Long> roomIdList = new HashSet<>();
-
+        ArrayList<User> users = userDAO.getAll(connection);
+        ArrayList<Room> rooms = roomDAO.getAll(connection);
         try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM ORDERS")) {
             ResultSet result = statement.executeQuery();
-            if(result.isBeforeFirst()) {
-                while (result.next()) {
-                    userIdList.add(result.getLong(2));
-                    roomIdList.add(result.getLong(3));
-                }
-                for (User user : userDAO.getAll(connection))
-                    if (userIdList.contains(user.getId()))
-                        usersList.put(user.getId(), user);
-                for (Room room : roomDAO.getAll(connection))
-                    if (roomIdList.contains(room.getId()))
-                        roomsList.put(room.getId(), room);
-
-                result.beforeFirst();
-                while (result.next()) {
-                    long orderId = result.getLong(1);
-                    long userId = result.getLong(2);
-                    long roomId = result.getLong(3);
-                    Date dateFrom = new Date(result.getDate(4).getTime());
-                    Date dateTo = new Date(result.getDate(5).getTime());
-                    double moneyPaid = result.getDouble(6);
-
-                    Order order = new Order(usersList.get(userId), roomsList.get(roomId), dateFrom, dateTo, moneyPaid);
-                    order.setId(orderId);
-                    orders.add(order);
-                }
+            while (result.next()) {
+                Order order = buildItem(result);
+                for (User user : users)
+                    if(user.getId() == order.getUser().getId()) {
+                        order.setUser(user);
+                        break;
+                    }
+                for (Room room : rooms)
+                    if (room.getId() == order.getRoom().getId()) {
+                        order.setRoom(room);
+                        break;
+                    }
+                orders.add(order);
             }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all roomDAO");
@@ -90,18 +76,26 @@ public class OrderDAO extends GeneralDAO<Order> {
             statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
             while (result.next()) {
-                long orderId = result.getLong(1);
-                long userId = result.getLong(2);
-                long roomId = result.getLong(3);
-                Date dateFrom = new Date(result.getDate(4).getTime());
-                Date dateTo = new Date(result.getDate(5).getTime());
-                double moneyPaid = result.getDouble(6);
-                order = new Order(userDAO.getById(connection, userId), roomDAO.getById(connection, roomId), dateFrom, dateTo, moneyPaid);
-                order.setId(orderId);
+                order = buildItem(result);
+                order.setUser(userDAO.getById(connection, order.getUser().getId()));
+                order.setRoom(roomDAO.getById(connection, order.getRoom().getId()));
             }
         } catch (SQLException e) {
             throw  new SQLException( e.getMessage() + "Issues with selecting all roomDAO");
         }
         return order;
     }
+
+    protected Order buildItem(ResultSet result) throws SQLException {
+        long orderId = result.getLong(1);
+        long userId = result.getLong(2);
+        long roomId = result.getLong(3);
+        Date dateFrom = new Date(result.getDate(4).getTime());
+        Date dateTo = new Date(result.getDate(5).getTime());
+        double moneyPaid = result.getDouble(6);
+        Order order = new Order(new User(userId), new Room(roomId), dateFrom, dateTo, moneyPaid);
+        order.setId(orderId);
+        return order;
+    }
+
 }
