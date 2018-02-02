@@ -62,6 +62,12 @@ public class RoomDAO extends GeneralDAO<Room> {
         return rooms;
     }
 
+    public Room getById(long id) throws SQLException{
+        Room room = getById("ROOMS", id);
+        room.setHotel(hotelDAO.getById(room.getHotel().getId()));
+        return room;
+    }
+
 
     public Room getById(Connection connection, long id) throws SQLException{
         Room room = getById(connection, "ROOMS", id);

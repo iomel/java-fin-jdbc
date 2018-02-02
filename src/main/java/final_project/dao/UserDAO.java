@@ -44,6 +44,9 @@ public class UserDAO extends GeneralDAO <User>{
         return users;
     }
 
+    public User getById(long id) throws SQLException {
+        return getById("USERS", id);
+    }
 
     public User getById(Connection connection, long id) throws SQLException {
         return getById(connection, "USERS", id);
