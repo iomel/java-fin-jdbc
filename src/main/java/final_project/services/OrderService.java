@@ -13,10 +13,7 @@ public class OrderService {
     private OrderDAO orderDAO = new OrderDAO();
 
     public void bookRoom(long roomId, long userId) throws Exception {
-        Room room = new Room(roomId);
-        User user = new User(userId);
-        Order newOrder = new Order(user, room, new Date(), new Date(), 0);
-        orderDAO.addOrder(newOrder);
+        orderDAO.addOrder(roomId, userId, new Date(), new Date(), 0);
     }
 
     public void cancelReservation(long roomId, long userId) throws Exception {

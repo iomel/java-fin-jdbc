@@ -2,6 +2,8 @@ package final_project.dao;
 
 import final_project.models.Hotel;
 import final_project.models.Room;
+import final_project.utils.exceptions.BadRequestException;
+import final_project.utils.exceptions.InternalServerException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,15 +20,15 @@ public class RoomDAO extends GeneralDAO<Room> {
         super(ROOM_DB);
     }
 
-    public Room addRoom(Room room) throws Exception {
+    public Room addRoom(Room room) throws BadRequestException, InternalServerException {
 
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO ROOMS VALUES (?, ?, ?, ?, ?, ?, ?)")){
 
             if (getById(connection, room.getId()) != null)
-                throw new SQLException("Room with such ID is registered already! ID: " + room.getId());
+                throw new BadRequestException("Room with such ID is registered already! ID: " + room.getId());
             if (hotelDAO.getById(connection, room.getHotel().getId()) == null)
-                throw new SQLException("There is no such hotel (ID:" + room.getHotel().getId() + ")");
+                throw new BadRequestException("There is no such hotel (ID:" + room.getHotel().getId() + ")");
 
             statement.setLong(1, room.getId());
             statement.setInt(2, room.getNumberOfGuests());
@@ -36,13 +38,13 @@ public class RoomDAO extends GeneralDAO<Room> {
             statement.setDate(6, new java.sql.Date(room.getDateAvailableFrom().getTime()));
             statement.setLong(7, room.getHotel().getId());
     } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue to save room ID: " + room.getId());
+            throw  new InternalServerException( e.getMessage() + " Issue to save room ID: " + room.getId());
         }
         return room;
     }
 
     @Override
-    protected Room buildItem(Connection connection, ResultSet result) throws SQLException {
+    protected Room buildItem(Connection connection, ResultSet result) throws SQLException, InternalServerException {
         long roomId = result.getLong(1);
         int guestsNum = result.getInt(2);
         double price = result.getDouble(3);
@@ -56,7 +58,7 @@ public class RoomDAO extends GeneralDAO<Room> {
     }
 
     @Override
-    protected ArrayList<Room> buildItemList(Connection connection, ResultSet result) throws SQLException {
+    protected ArrayList<Room> buildItemList(Connection connection, ResultSet result) throws SQLException, InternalServerException {
         ArrayList<Room> rooms = new ArrayList<>();
         ArrayList<Hotel> hotels = hotelDAO.getAll(connection);
         while (result.next()) {

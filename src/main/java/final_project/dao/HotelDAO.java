@@ -1,6 +1,9 @@
 package final_project.dao;
 
 import final_project.models.Hotel;
+import final_project.utils.exceptions.BadRequestException;
+import final_project.utils.exceptions.InternalServerException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,12 +17,12 @@ public class HotelDAO extends GeneralDAO<Hotel> {
         super(HOTEL_DB);
     }
 
-    public Hotel addHotel(Hotel hotel) throws Exception {
+    public Hotel addHotel(Hotel hotel) throws BadRequestException, InternalServerException {
 
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO HOTELS VALUES (?, ?, ?, ?, ?)")) {
             if (getById(connection, hotel.getId()) != null)
-                throw new SQLException("Hotel with such ID is registered already! ID: " + hotel.getId());
+                throw new BadRequestException("Hotel with such ID is registered already! ID: " + hotel.getId());
 
             statement.setLong(1, hotel.getId());
             statement.setString(2, hotel.getHotelName());
@@ -27,7 +30,7 @@ public class HotelDAO extends GeneralDAO<Hotel> {
             statement.setString(4, hotel.getCity());
             statement.setString(5, hotel.getStreet());
         } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue to save hotel ID: " + hotel.getId());
+            throw  new InternalServerException( e.getMessage() + " Issue to save hotel ID: " + hotel.getId());
         }
         return hotel;
     }

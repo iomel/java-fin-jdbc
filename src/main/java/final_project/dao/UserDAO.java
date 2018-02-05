@@ -2,6 +2,8 @@ package final_project.dao;
 
 import final_project.models.User;
 import final_project.utils.UserType;
+import final_project.utils.exceptions.BadRequestException;
+import final_project.utils.exceptions.InternalServerException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +18,7 @@ public class UserDAO extends GeneralDAO <User>{
         super(USER_DB);
     }
 
-    public User addUser(User user) throws SQLException {
+    public User addUser(User user) throws InternalServerException, BadRequestException {
 
         try(Connection connection = getConnection();
             PreparedStatement statement = connection.prepareStatement("INSERT INTO USERS VALUES (?, ?, ?, ?, ?, ?)")) {
@@ -28,17 +30,17 @@ public class UserDAO extends GeneralDAO <User>{
             statement.setInt(5, user.getAge());
             statement.setString(6, user.getUserType().name());
        } catch (SQLException e) {
-            throw  new SQLException( e.getMessage() + " Issue to save User ID: " + user.getId());
+            throw  new InternalServerException( e.getMessage() + " Issue to save User ID: " + user.getId());
         }
         return user;
     }
 
-    private void checkUserDuplicate (Connection connection, long id, String username) throws SQLException{
+    private void checkUserDuplicate (Connection connection, long id, String username) throws SQLException, BadRequestException{
         PreparedStatement checkDuplicateStatement = connection.prepareStatement("SELECT * FROM USERS WHERE ID = ? OR U_NAME = ?");
         checkDuplicateStatement.setLong(1, id);
         checkDuplicateStatement.setString(2, username);
         if(checkDuplicateStatement.executeUpdate() != 0)
-            throw new SQLException("User is registered already! ID: " + id);
+            throw new BadRequestException("User is registered already! ID: " + id);
     }
 
     @Override

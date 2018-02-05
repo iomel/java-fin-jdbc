@@ -6,6 +6,7 @@ import final_project.services.RoomService;
 import final_project.utils.Filter;
 import final_project.utils.Session;
 import final_project.utils.UserType;
+import final_project.utils.exceptions.BadRequestException;
 
 import java.util.ArrayList;
 
@@ -14,14 +15,14 @@ public class RoomController {
 
     public Room addRoom(User user, Room room) throws Exception {
         if(!Session.checkSession(user, UserType.ADMIN))
-            throw new Exception("User have no right to add room!");
+            throw new BadRequestException("User have no right to add room!");
 
         return roomService.addRoom(room);
     }
 
     public void deleteRoom(User user, Room room) throws Exception {
         if(!Session.checkSession(user, UserType.ADMIN))
-            throw new Exception("User have no right to delete room!");
+            throw new BadRequestException("User have no right to delete room!");
 
         roomService.deleteRoom(room);
     }
