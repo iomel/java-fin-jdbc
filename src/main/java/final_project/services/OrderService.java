@@ -10,21 +10,17 @@ import final_project.models.User;
 import java.util.Date;
 
 public class OrderService {
-    private UserDAO userDAO = new UserDAO();
-    private RoomDAO roomDAO = new RoomDAO();
     private OrderDAO orderDAO = new OrderDAO();
 
     public void bookRoom(long roomId, long userId) throws Exception {
-        Room room = roomDAO.getById(roomId);
-        User user = userDAO.getById(userId);
+        Room room = new Room(roomId);
+        User user = new User(userId);
         Order newOrder = new Order(user, room, new Date(), new Date(), 0);
         orderDAO.addOrder(newOrder);
     }
 
     public void cancelReservation(long roomId, long userId) throws Exception {
-        for (Order order : orderDAO.getAll())
-            if (order.getRoom().getId() == roomId && order.getUser().getId() == userId)
-                orderDAO.delete(order.getId());
+        orderDAO.delete(roomId, userId);
     }
 
 }

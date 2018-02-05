@@ -16,5 +16,9 @@ public class Session {
         loggedUser = user;
     }
 
+    public static boolean checkSession (User user, UserType userType) {
+        return  (loggedUser.equals(user) && loggedUser.getUserType() == UserType.ADMIN);
+    }
+
 
 }

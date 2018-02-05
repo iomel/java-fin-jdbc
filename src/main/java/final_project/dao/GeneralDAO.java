@@ -30,6 +30,7 @@ public abstract class GeneralDAO <T> {
             throw  new SQLException( e.getMessage() + " Issue with deleting ID: " + id + " from DB: " + DB_NAME);
         }
     }
+
     public ArrayList<T> getAll() throws SQLException {
         try(Connection connection = getConnection()){
             return getAll(connection);

@@ -18,12 +18,13 @@ public class UserService {
     }
 
     public void login(String name, String password) throws Exception {
+        User user = userDAO.getByTextField("U_NAME", name).get(0);
+
         if (name == null || password == null)
             throw new BadRequestException("UserService.isRegistered error - name or password is NULL!");
 
-        for (User userInDB : userDAO.getAll())
-            if (name.equals(userInDB.getUserName()) && password.equals(userInDB.getPassword()))
-                Session.startSession(userInDB);
+        if (user.getPassword().equals(password))
+            Session.startSession(user);
     }
 
     private void validate(User user)throws Exception{

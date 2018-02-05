@@ -45,6 +45,20 @@ public class OrderDAO extends GeneralDAO<Order> {
         return order;
     }
 
+    public void delete(long roomId, long userId) throws SQLException {
+        try(Connection connection = getConnection();
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM ORDERS WHERE R_ID = ? AND U_ID = ?")) {
+            statement.setLong(1, roomId);
+            statement.setLong(2, userId);
+            if(statement.executeUpdate() == 0)
+                throw new SQLException();
+        } catch (SQLException e) {
+            throw  new SQLException( e.getMessage() + " Issue with deleting order with Room ID: "
+                    + roomId + " and User ID: " + userId + " from ORDERS");
+        }
+    }
+
+
     @Override
     protected Order buildItem(Connection connection, ResultSet result) throws SQLException {
         long orderId = result.getLong(1);

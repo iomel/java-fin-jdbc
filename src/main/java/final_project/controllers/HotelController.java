@@ -20,14 +20,14 @@ public class    HotelController {
         return hotelService.findHotelByCity(city);
     }
     public Hotel addHotel(User user, Hotel hotel) throws Exception {
-        if(!(user != null && user.equals(Session.getUser()) && user.getUserType() == UserType.ADMIN))
+        if(!Session.checkSession(user, UserType.ADMIN))
             throw new BadRequestException("User have no right to add hotel!");
 
         return hotelService.addHotel(hotel);
     }
 
     public void deleteHotel(User user, Hotel hotel) throws Exception {
-        if(!(user != null && user.equals(Session.getUser()) && user.getUserType() == UserType.ADMIN))
+        if(!Session.checkSession(user, UserType.ADMIN))
             throw new BadRequestException("User have no right to delete hotel!");
 
         hotelService.deleteHotel(hotel);
